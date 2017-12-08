@@ -2,6 +2,9 @@ package flv
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
+
 	"github.com/gwuhaolin/livego/av"
 )
 
@@ -142,6 +145,9 @@ func (tag *Tag) ParseMeidaTagHeader(b []byte, isVideo bool) (n int, err error) {
 }
 
 func (tag *Tag) parseAudioHeader(b []byte) (n int, err error) {
+	// fmt.Fprintf(w, "%s\t", "Audio")
+	// fmt.Fprintf(w, "\n")
+	// w.Flush()
 	if len(b) < n+1 {
 		err = fmt.Errorf("invalid audiodata len=%d", len(b))
 		return
@@ -161,6 +167,9 @@ func (tag *Tag) parseAudioHeader(b []byte) (n int, err error) {
 }
 
 func (tag *Tag) parseVideoHeader(b []byte) (n int, err error) {
+
+	// debug.PrintStack()
+
 	if len(b) < n+5 {
 		err = fmt.Errorf("invalid videodata len=%d", len(b))
 		return
@@ -169,12 +178,37 @@ func (tag *Tag) parseVideoHeader(b []byte) (n int, err error) {
 	tag.mediat.frameType = flags >> 4
 	tag.mediat.codecID = flags & 0xf
 	n++
+
 	if tag.mediat.frameType == av.FRAME_INTER || tag.mediat.frameType == av.FRAME_KEY {
+		if tag.mediat.frameType == av.FRAME_INTER {
+			fmt.Fprintf(w, "%s\t", "B/P")
+		}
+		if tag.mediat.frameType == av.FRAME_KEY {
+			fmt.Fprintf(w, "%s\t", "I")
+		}
 		tag.mediat.avcPacketType = b[1]
+
+		if tag.mediat.avcPacketType == 0 {
+			fmt.Fprintf(w, "%s\t", "Sequence Header")
+		}
+		if tag.mediat.avcPacketType == 1 {
+			fmt.Fprintf(w, "%s\t", "NALU")
+		}
+		if tag.mediat.avcPacketType == 2 {
+			fmt.Fprintf(w, "%s\t", "End of sequence")
+		}
 		for i := 2; i < 5; i++ {
 			tag.mediat.compositionTime = tag.mediat.compositionTime<<8 + int32(b[i])
 		}
 		n += 4
 	}
+	fmt.Fprintf(w, "\n")
+	w.Flush()
 	return
+}
+
+var w *tabwriter.Writer
+
+func init() {
+	w = tabwriter.NewWriter(os.Stdout, 20, 0, 0, ' ', tabwriter.Debug)
 }

@@ -4,17 +4,20 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
+	"net"
+	"net/url"
+	"os"
+	"reflect"
+	"strings"
+	"text/tabwriter"
+	"time"
+
 	"github.com/gwuhaolin/livego/av"
 	"github.com/gwuhaolin/livego/configure"
 	"github.com/gwuhaolin/livego/container/flv"
 	"github.com/gwuhaolin/livego/protocol/rtmp/core"
 	"github.com/gwuhaolin/livego/utils/uid"
-	"log"
-	"net"
-	"net/url"
-	"reflect"
-	"strings"
-	"time"
 )
 
 const (
@@ -415,6 +418,10 @@ func (v *VirReader) Read(p *av.Packet) (err error) {
 	p.Data = cs.Data
 	p.TimeStamp = cs.Timestamp
 
+	if p.IsVideo {
+		fmt.Printf("size: %d |", len(p.Data))
+	}
+
 	v.SaveStatics(p.StreamID, uint64(len(p.Data)), p.IsVideo)
 	v.demuxer.DemuxH(p)
 	return err
@@ -435,4 +442,10 @@ func (v *VirReader) Info() (ret av.Info) {
 func (v *VirReader) Close(err error) {
 	log.Println("publisher ", v.Info(), "closed: "+err.Error())
 	v.conn.Close(err)
+}
+
+var w *tabwriter.Writer
+
+func init() {
+	w = tabwriter.NewWriter(os.Stdout, 20, 0, 0, ' ', tabwriter.Debug)
 }

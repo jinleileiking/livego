@@ -2,22 +2,23 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net"
+	"time"
+
 	"github.com/gwuhaolin/livego/configure"
 	"github.com/gwuhaolin/livego/protocol/hls"
 	"github.com/gwuhaolin/livego/protocol/httpflv"
 	"github.com/gwuhaolin/livego/protocol/httpopera"
 	"github.com/gwuhaolin/livego/protocol/rtmp"
-	"log"
-	"net"
-	"time"
 )
 
 var (
 	version        = "master"
-	rtmpAddr       = flag.String("rtmp-addr", ":1935", "RTMP server listen address")
-	httpFlvAddr    = flag.String("httpflv-addr", ":7001", "HTTP-FLV server listen address")
-	hlsAddr        = flag.String("hls-addr", ":7002", "HLS server listen address")
-	operaAddr      = flag.String("manage-addr", ":8090", "HTTP manage interface server listen address")
+	rtmpAddr       = flag.String("rtmp-addr", ":9797", "RTMP server listen address")
+	httpFlvAddr    = flag.String("httpflv-addr", ":7771", "HTTP-FLV server listen address")
+	hlsAddr        = flag.String("hls-addr", ":7832", "HLS server listen address")
+	operaAddr      = flag.String("manage-addr", ":8999", "HTTP manage interface server listen address")
 	configfilename = flag.String("cfgfile", "livego.cfg", "live configure filename")
 )
 
@@ -121,10 +122,10 @@ func main() {
 	}
 
 	stream := rtmp.NewRtmpStream()
-	hlsServer := startHls()
+	// hlsServer := startHls()
 	startHTTPFlv(stream)
 	startHTTPOpera(stream)
 
-	startRtmp(stream, hlsServer)
-	//startRtmp(stream, nil)
+	// startRtmp(stream, hlsServer)
+	startRtmp(stream, nil)
 }
